@@ -1,4 +1,4 @@
-const mongoose = require("mongoogse");
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
@@ -42,25 +42,23 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      unique: true,
+      unique: true
     },
     referID: {
       type: String,
       required: true,
     },
-    uplineID: {
+    placementID: {
       type: String,
       required: true,
     },
     myVolioms: {
-        new mongoose.Schema({
-        voliomA: {
-          type: String,
-        },
-        voliomB: {
-          type: String,
-        },
-      })
+      voliomA: {
+        type: String,
+      },
+      voliomB: {
+        type: String,
+      },
     },
     teamMembers: [
       new mongoose.Schema(
@@ -112,7 +110,6 @@ const userSchema = new mongoose.Schema(
     },
     img: {
       type: String,
-      unique: true,
     },
     isActive: {
       type: Boolean,
@@ -127,3 +124,10 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+const userCollection = new mongoose.model("user_collection", userSchema);
+
+
+
+module.exports = userCollection;
+
