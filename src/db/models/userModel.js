@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
-    referByID: {
+    referID: {
       type: String,
       required: true,
     },

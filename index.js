@@ -8,6 +8,8 @@ app.get("/", (req, res) => {
   res.send("server are online");
 });
 
+app.use("/user", require("./src/routes/user/user"))
+
 app.listen(port, () => {
   console.log(`Server are listening on PORT ${port}`);
 });
