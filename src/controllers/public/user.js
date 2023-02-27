@@ -16,8 +16,10 @@ exports.getPlacementID = async (req, res) => {
       });
     }
     if (!referInfo.myVolioms.voliomA || !referInfo.myVolioms.voliomB) {
+      console.log(referInfo);
       return res.json({
         message: "Your volume are not full yet",
+        placementID: userID,
       });
     }
     // const allFindedUser = await [];
@@ -47,6 +49,8 @@ exports.getPlacementID = async (req, res) => {
       data: filterData,
     });
   } catch (error) {
-    res.json({});
+    res.json({
+      message: "Something is wrong, please try letter",
+    });
   }
 };

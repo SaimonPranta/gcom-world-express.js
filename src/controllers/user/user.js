@@ -38,6 +38,7 @@ const {
       console.log("data are missing")
       return res.status(200).json({});
     }
+    const checkDataIsExist = await userCollection.findOne({})
 
     const processData = await new userCollection({
       ...req.body,
@@ -49,7 +50,7 @@ const {
 
 
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
 
   }
 };
