@@ -1,4 +1,6 @@
 const userCollection = require("../../db/models/userModel");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 exports.user = async (req, res) => {
   try {
@@ -40,18 +42,47 @@ exports.registationExistingInfoVerification = async (req, res) => {
       console.log("data are missing");
       return res.status(200).json({});
     }
-    const checkisUserIDExist = await userCollection.findOne({
-      userID,
-    });
-    const checkisphoneNumberExist = await userCollection.findOne({
-      phoneNumber,
-    });
-     const checkIsRefferIDExist = await userCollection.findOne({
-       userID: referID,
-     });
-      const checkIsPlacementIDExist = await userCollection.findOne({
+    const checkisUserIDExist = await userCollection.findOne(
+      {
+        userID,
+      },
+      {
+        _id: 1,
+      }
+    );
+    const checkisEmailExist = await userCollection.findOne(
+      {
+        email,
+      },
+      {
+        _id: 1,
+      }
+    );
+    const checkisphoneNumberExist = await userCollection.findOne(
+      {
+        phoneNumber,
+      },
+      {
+        _id: 1,
+      }
+    );
+    const checkIsRefferIDExist = await userCollection.findOne(
+      {
+        userID: referID,
+      },
+      {
+        _id: 1,
+      }
+    );
+    const checkIsPlacementIDExist = await userCollection.findOne(
+      {
         userID: placementID,
-      });
+      },
+      {
+        _id: 1,
+      }
+    );
+    console.log(checkisUserIDExist);
 
     if (checkisUserIDExist?._id) {
       return res.status(200).json({
@@ -61,6 +92,11 @@ exports.registationExistingInfoVerification = async (req, res) => {
     if (checkisphoneNumberExist?._id) {
       return res.status(200).json({
         failed: "Sorry, Your provided Phone Number is already exist.",
+      });
+    }
+    if (checkisEmailExist?._id) {
+      return res.status(200).json({
+        failed: "Sorry, Your provided Email is already exist.",
       });
     }
     if (!checkIsRefferIDExist) {
@@ -79,7 +115,7 @@ exports.registationExistingInfoVerification = async (req, res) => {
       sucess: true,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(200).json({
       failed: "Something is wrong please try again letter.",
     });
@@ -87,34 +123,40 @@ exports.registationExistingInfoVerification = async (req, res) => {
 };
 exports.registation = async (req, res) => {
   try {
-    const {
-      fullName,
-      fatherName,
-      motherName,
-      gender,
-      phoneNumber,
-      userID,
-      email,
-      address,
-      country,
-      nid,
-      referID,
-      password,
-    } = req.body;
-    console.log("hi");
-
+    const { password, productID } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
     const processData = await new userCollection({
       ...req.body,
-      placementID: req.body.referID,
+      packages: [productID],
+      password: hashedPassword,
     });
+    
     const data = await processData.save();
-    console.log("data are ok", data);
-    return res.status(200).json({});
+    
+    if (data?._id) {
+      const token = await jwt.sign(
+        {
+          userID: data.userID,
+          id: data._id,
+        },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: "1d" }
+      );
+      data.password = null;
+
+      return res.status(201).json({
+        data: data,
+        sucess: "sucessfully created your accout",
+        token: token,
+      });
+    }
+     res.status(200).json({});
   } catch (error) {
     console.log(error.message);
     return res.status(200).json({});
   }
 };
+
 exports.login = async (req, res) => {
   try {
   } catch (error) {
