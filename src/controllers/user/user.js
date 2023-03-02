@@ -82,7 +82,6 @@ exports.registationExistingInfoVerification = async (req, res) => {
         _id: 1,
       }
     );
-    console.log(checkisUserIDExist);
 
     if (checkisUserIDExist?._id) {
       return res.status(200).json({
@@ -130,9 +129,9 @@ exports.registation = async (req, res) => {
       packages: [productID],
       password: hashedPassword,
     });
-    
+
     const data = await processData.save();
-    
+
     if (data?._id) {
       const token = await jwt.sign(
         {
@@ -140,7 +139,7 @@ exports.registation = async (req, res) => {
           id: data._id,
         },
         process.env.JWT_SECRET_KEY,
-        { expiresIn: "1d" }
+        { expiresIn: "3d" }
       );
       data.password = null;
 
@@ -150,17 +149,52 @@ exports.registation = async (req, res) => {
         token: token,
       });
     }
-     res.status(200).json({});
+    res.status(200).json({
+      failed: "Failed to create your account, please try again latter",
+    });
   } catch (error) {
     console.log(error.message);
-    return res.status(200).json({});
+    return res.status(200).json({
+      failed: "Something is wrong, please try again latter",
+    });
   }
 };
 
 exports.login = async (req, res) => {
+  console.log("ok", req.body);
   try {
+    const { userID, password } = await req.body;
+    const user = await userCollection.findOne({ userID });
+    if (!user._id) {
+      return res.json({
+        failed: "User or Password are invalid, please try again",
+      });
+    }
+    const hashing = await bcrypt.compare(password, user.password);
+    if (hashing && user?._id) {
+      user.password = await "";
+      const token = await jwt.sign(
+        {
+          userID: user.userID,
+          id: user._id,
+        },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: "3d" }
+      );
+
+      return res.json({
+        data: user,
+        token: token,
+      });
+    }
+    res.json({
+      failed: "User or Password are invalid, please try again",
+    });
   } catch (error) {
     console.log(error);
+    res.json({
+      failed: "User or Password are invalid, please try again",
+    });
   }
 };
 exports.updateUser = async (req, res) => {
